@@ -51,7 +51,8 @@
    
    
    <!-------------- FB Login/Logout BUTTON, switches automatically ------------------>
-   <fb:login-button autologoutlink="true" style="position:absolute;right:0px;top:2px;"></fb:login-button>
+   <fb:login-button autologoutlink="true" style="position:absolute;right:0px;top:2px;"> <!-- onlogin="checkLoginState();"  class="fb-exit"-->
+   </fb:login-button>
 
 
 
@@ -62,7 +63,7 @@
            </p>
 		   <!--<p class="language"><a href="/eng">ENG</a></p>-->
 		   
-		   <span id="fbLogout" onclick="fbLogout()"><a class="fb_button fb_button_medium"><span class="fb_button_text">Logout</span></a></span>
+		  
 
 		   
 	   </div>
@@ -82,12 +83,14 @@
 		             <div class="col-sm-4 col-xs-12 my-background coreDivs-toHide head-style" style="background-color:lavender;" id="qrGenerateDiv" >
 		                 <!-------------- GENERATE Form Start------------->	
                          <form action="" id="myFormZ" method="post">
+						 
                              <div class="form-group">
-                                  <label for="qrtext">Your city to search: <span class="glyphicon glyphicon-transfer"></span></label>
-                                  <input type="text" class="form-control" id="qrtext" name="qr">
+                                  <label for="fbCity">Your city to search: <span class="glyphicon glyphicon-transfer"></span></label>
+                                  <input type="text" class="form-control" id="fbCity" name="qr">
                              </div>
 					
                             <button type="button" class="btn btn-default" id="submitEvents">Events</button>
+							<button type="button" class="btn btn-default" id="submitPeople">People</button>
 				            <button type="button" class="btn btn-default" id="clear">Clear</button>
                         </form>				   
                         <!---------------- END GENERATE  Form -------->				   
