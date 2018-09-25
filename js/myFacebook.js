@@ -2,14 +2,14 @@ $(document).ready(function(){
 	
 	
 	
-	// Click button to get FB events list
+	// Click button to get FB events list---------------
 	$("#submitEvents").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
         getFBEvents(); 
     });
 	
 	
 	
-	// Click button to get People list
+	// Click button to get People list-----------------
 	$("#submitPeople").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
         getFBPeople(); 
     });
@@ -32,7 +32,7 @@ $(document).ready(function(){
 	
 	
 	
-	//Getting FB events list
+	//Getting FB places list by city
 	// **************************************************************************************
     // **************************************************************************************
     //                                                                                     **
@@ -105,7 +105,7 @@ $(document).ready(function(){
 	
 	
 	
-	//Constructs ajax response to htmll() resultsd to DIV 
+	//Constructs ajax response (FB places) to html() resultsd to DIV 
 	// **************************************************************************************
     // **************************************************************************************
     //                                                                                     **
@@ -247,15 +247,15 @@ $(document).ready(function(){
 	
 	
 	
-	
+	//FB application ID
     var MY_CONSTANT_APP_ID = '298209730993812';
 	
-	//==================================== FB PART ===============================
+	//================================================ FB API Connect PART ===========================================
 	
       // This is called with the results from from FB.getLoginStatus().
-      function statusChangeCallback(response) {
+      function myStatusChangeCallback(response) {
 		  
-		  if (!response.status){ alert("OUTTTTTTT!!!");}
+	   if (!response.status){ alert("OUTTTTTTT!!! !response.status");} //DELETE???
 		  
 		  
         console.log(response);
@@ -266,22 +266,22 @@ $(document).ready(function(){
 		
         if (response.status === 'connected') {
           // Logged into your app and Facebook.
-          testAPI();
+          testAPI(startingPhpSession);  //function {startingPhpSession} used as callback
 		  alert("IN");
+		  
 		  
         } else if (response.status === 'not_authorized') {
           // The person is logged into Facebook, but not your app.
           console.log("The person is logged into Facebook, but not your app.");
 		  alert("???OUT");
 		  
-		  //
-		} else if (!response.status){ alert("OUTTTTTTT!!!");
-		  //
-		  
         } else {
           // The person is not logged into Facebook, so we're not sure if
           // they are logged into this app or not.
 		  alert("OUT");
+		  
+		  //Clears divs with user details on log out
+		  clearUserInfoDiv();
         }
       }
 
@@ -289,12 +289,16 @@ $(document).ready(function(){
       // This function is called when someone finishes with the Login
       // Button.  See the onlogin handler attached to it in the sample
       // code below.
+	  //WILL NOT FIRE!!!, NOT TRIGERED IN CODE!!!!!!!!!!
+	  /*
       function checkLoginState() {
         FB.getLoginStatus(function(response) {
-          statusChangeCallback(response);
+          myStatusChangeCallback(response);
         });   //, true
       }
-
+      */
+	  
+	  
       window.fbAsyncInit = function() {
         FB.init({
           appId: MY_CONSTANT_APP_ID,  //defined in CONST   
@@ -316,28 +320,27 @@ $(document).ready(function(){
         //
         // These three cases are handled in the callback function.
 
+		
+		//Core FB API method to check if the user is logged
         FB.getLoginStatus(function(response) {
-          statusChangeCallback(response);
-        });
+          //myStatusChangeCallback(response);
+        }, true);  //MEGA FIX-> added {,true}, it forces to check connection status not from cache, but from FB originally
 		
 		
 		//FB.Event.subscribe('auth.authResponseChange', auth_response_change_callback);
         //FB.Event.subscribe('auth.statusChange', auth_status_change_callback);
-
+		
+		
+        //subscribing to any changes in auth status(log in/log out)
 		FB.Event.subscribe('auth.authResponseChange', function(response) {
             console.log('The status of the session changed to: '+response.status);
             alert('The status of the session changed to: '+response.status);
+			myStatusChangeCallback(response);
         });
 		
 		
       };
 
-	  
-	  
-
-	 
-	  
-	  
 	  
 	  
 	  
@@ -354,23 +357,112 @@ $(document).ready(function(){
 
 	  
 	  
-	  
+	  //It runs onSuccess Login, additionally it runs {function startingPhpSession(nameFB)} to start PHP session with received response.name 
       // Here we run a very simple test of the Graph API after login is
-      // successful.  See statusChangeCallback() for when this call is made.
-      function testAPI() {
+      // successful.  See myStatusChangeCallback() for when this call is made.
+	  // **************************************************************************************
+      // **************************************************************************************
+      //                                                                                     **
+      function testAPI(callbackX) { //callbackX is {function startingPhpSession(nameFB)}
+		var nameX;
         console.log('Welcome!  Fetching your information.... ');
+		
+		//Addressing FB Endpoint with user info
         FB.api('/me', function(response) {
           console.log("Fb response");
           console.log(response);
           console.log('Successful login for: ' + response.name);
 		  
+		  nameX = response.name; //getting the user name from response
+		  idX = response.id; //user ID
+		  //alert("nameX " + nameX);
+		  
+		  
+		  //HTML div ('#status') with user name, id, image, access token
           document.getElementById('status').innerHTML =
-            'Thanks for logging in, ' + response.name + '!<br>' +
-			 'Access Token is ' + FB.getAuthResponse()['accessToken'];
-			
-        });
+                 '<h3>Welcome back, ' + response.name + '!</h3>' +  //name
+				 '<img src="http://graph.facebook.com/' + response.id + '/picture?type=normal" alt="profile">' +  //picture //http://graph.facebook.com/FACEBOOK_USER_ID/picture?type=large
+				 '<br><br>Your ID is -> ' + response.id +                       //id
+			     '<br><br>Access Token is ' + FB.getAuthResponse()['accessToken'] +   //access token
+				 '<br><br>';
+		
+		//starting function {startingPhpSession(nameX)}
+		callbackX(nameX, idX); //here callbackX() is function {startingPhpSession(nameX)} //Must be inserted inside {FB.api('/me', function(response)}, to be executed the last, because FB.api('/me', function(response)} is a callback itself. Otherwise {function startingPhpSession(nameX)} will start before the response.name is gotten
+        });  //END  FB.api('/me', function(response) 
+		
+		
+		//Addressing FB Endpoint with user INBOX
+        FB.api('me/inbox', function(response) {
+			alert("Inbox messages: " + JSON.stringify(response, null, 4));
+		}); 
+		//END Addressing FB Endpoint with user INBOX
+		
+		
+		 //callbackX();	  
+		 //sends user profile detail via <form> POST to same page to start Php Session
+		 //startingPhpSession(nameX);  
+		  
+		  
       }
+	  
+	  
+	  
+	  
+	  
 //=================================== END FB PART ===============================
+
+
+
+
+
+
+
+
+   
+    //function sends user profile detail(name, id) via <form> POST to same page to start Php Session. 
+	//This functions is triggered as callback in {function testAPI(callbackX)}
+    // **************************************************************************************
+    // **************************************************************************************
+    //                                                                                     **
+	function startingPhpSession(nameFB, idFB)
+	{
+		alert("response.name " + nameFB + " id " + idFB); //gets users name and id 
+		
+		
+		//creates a form with action to {'Classes/StartPersonalSession.php'} and pass user id/name with $_POST + attificially submit it
+		var url = 'Classes/StartPersonalSession.php'; 
+        var form = $('<form id="generForm" action="' + url + '" method="post">' +
+            '<input type="text" name="api_FB_id" value="' + idFB + '" />' +      //passed ID 
+			'<input type="text" name="api_FB_name" value="' + nameFB + '" />' +  //passes name 
+            '</form>');
+        $('body').append(form);
+        //form.submit();
+		
+		
+	 } 
+	// **                                                                                  **
+    // **************************************************************************************
+    // **************************************************************************************
+
+	
+	
+	
+	
+	
+
+
+	//Clears divs with user details on log out
+	// **************************************************************************************
+    // **************************************************************************************
+    //                                                                                     **
+	function clearUserInfoDiv()
+	{
+		$("#status, #generForm").html("");
+		
+	 } 
+	// **                                                                                  **
+    // **************************************************************************************
+    // **************************************************************************************
 	
 	
 	

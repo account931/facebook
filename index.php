@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!doctype html>
 <!--------------------------------Bootstrap  Main variant ------------------------------------------>
   <html lang="en-US">
