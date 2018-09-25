@@ -1,4 +1,5 @@
-FaceBook api
+FaceBook api, works on localhost Only, due to SSL absence on hosting server.
+Functionality: FB log_in/log_out buttons, if user logs to your application, it gets user's name, id, access token and can mahe requests to diffrent user's facebook sections.
 
 =================================================
 
