@@ -35,7 +35,7 @@ class StartPersonalSession {
 			$_SESSION['connected'] = false;
 		}
 		
-		//JSOn output all SESSION vars
+		//JSOn output all SESSION vars, just for info purpose
 		echo json_encode($_SESSION);
 		
 		//heading back to main FB page

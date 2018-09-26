@@ -2,10 +2,10 @@ $(document).ready(function(){
 	
 	
 	
-	// Click button to get FB events list---------------
+	// Click button to get FB city places list---------------
 	$("#submitEvents").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
 	    if(checkIfLoggedtoFB()){
-            getFBEvents(); 
+            getFB_CityPlace(); 
 		}
     });
 	
@@ -15,12 +15,12 @@ $(document).ready(function(){
 	//not working due to FB privacy, it returns only logged user info
 	$("#submitPeople").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
         if(checkIfLoggedtoFB()){
-		    getFBPeople(); 
+		    getFB_UserInfo(); 
 		}
     });
 	
 	
-	// exit not working
+	// Clear the input
 	$("#clear").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
 	    $("#fbCity").val('');  //sets to empty
         /*
@@ -68,7 +68,7 @@ $(document).ready(function(){
 	// **************************************************************************************
     // **************************************************************************************
     //                                                                                     **
-	 function getFBEvents()
+	 function getFB_CityPlace()
 	 {
 		/*
 	     FB.login(function(response) {
@@ -193,7 +193,7 @@ $(document).ready(function(){
 	// **************************************************************************************
     // **************************************************************************************
     //                                                                                     **
-	 function getFBPeople()
+	 function getFB_UserInfo()  
 	 {
 		
 		 /*
@@ -284,7 +284,7 @@ $(document).ready(function(){
 	
 	//================================================ FB API Connect PART ===========================================
 	
-      // This is called with the results from from FB.getLoginStatus().
+      // This is called with the results from from FB.getLoginStatus() or FB.Event.subscribe('auth.authResponseChange', function(response)
       function myStatusChangeCallback(response) {
 		  
 	   //if (!response.status){ alert("OUTTTTTTT!!! !response.status");} //DELETE???
@@ -309,7 +309,7 @@ $(document).ready(function(){
 		  alert("USER refused access for your application");
 		  
 		//FOR logged out users  
-        } else {
+        } else { //response.status === 'unknown'
           // The person is not logged into Facebook, so we're not sure if
           // they are logged into this app or not.
 		  alert("LOGGED OUT");
@@ -361,16 +361,17 @@ $(document).ready(function(){
 		//Core FB API method to check if the user is logged CAN NOT BE TURNED OFF
         FB.getLoginStatus(function(response) { 
 		   alert("FB.getLoginStatus");
-          //myStatusChangeCallback(response);
+           //myStatusChangeCallback(response);
         }, true);  //MEGA FIX-> added {,true}, it forces to check connection status not from cache, but from FB originally
+		
 		
 		
 		//FB.Event.subscribe('auth.authResponseChange', auth_response_change_callback);
         //FB.Event.subscribe('auth.statusChange', auth_status_change_callback);
 		
 		
-        //subscribing to any changes in auth status(log in/log out) ->TO AVOID DOUBLE REROUND ON LOGIN -> subscribe for log
-		FB.Event.subscribe('auth.authResponseChange', function(response) {    //auth.logout
+        //subscribing to any changes in auth status(log in/log out) ->
+		FB.Event.subscribe('auth.authResponseChange', function(response) {    //auth.logout=(logOut only), auth.authResponseChange=(both logIn & logOUT)
             console.log('The status of the session changed to: '+response.status);
             alert('The status of the session changed to: '+response.status);
 			myStatusChangeCallback(response);

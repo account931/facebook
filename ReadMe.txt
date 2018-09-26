@@ -12,10 +12,18 @@ How it works:
 4. {myStatusChangeCallback(response)} checks response.status from callback, if (response.status === 'connected'), it runs function  {testAPI(startingPhpSession_ajax)}
    testAPI() uses function startingPhpSession_ajax() as a callback to make sure it runs only after testAPI() ends.
    testAPI() makes request to FB endpoint "/me" to get user name and id, html them to div and pass them go startingPhpSession_ajax();
-   startingPhpSession_ajax() constructs an atrificial form with userName/userID <input> and emulates form POST submitting to action {Classes/StartPersonalSession.php}
+   startingPhpSession_ajax() sends ajax with userName/userID to Classes/StartPersonalSession.php  //FALSE=>constructs an atrificial form with userName/userID <input> and emulates form POST submitting to action {Classes/StartPersonalSession.php}
 5. Classes/StartPersonalSession.php checks if $_POST['id'] exists and start personal session (to use FB Api as personal registration/authorization).
 
-6. JS/myFacebook.js-> FB.Event.subscribe('auth.authResponseChange', function(response) { is used to subscribe to detect any changes in logged/unlogged status.
+6. JS/myFacebook.js-> FB.Event.subscribe('auth.authResponseChange', function(response) { is used to subscribe to detect any changes in logged/unlogged status and trigger {myStatusChangeCallback(response)}
+
+7. Setting internal custom $_SESSION, when user logged in FB:
+7.1 When user logs  in, {myStatusChangeCallback(response)} gets response.status === 'connected'  and runs function {startingPhpSession_ajax()}, 
+    which sends ajax with userName/userID to Classes/StartPersonalSession.php. 
+    StartPersonalSession.php checks if FB id is passed to script and sets $_SESSION['connected'] = true + $_SESSION['userX'];
+
+7.2 When user logs out, {myStatusChangeCallback(response)} gets response.status === 'unknown' and runs {stopPhpSession_ajax()}, 
+    which addresses Classes/StopPersonalSession.php and execute {session_destroy()};
 ===============================================================================================================================
 
 #It is not possible to view other people page info, unless the logged to gheir accounts using FB OAUTH on your site and grant access to your application
@@ -27,6 +35,6 @@ How it works:
  It {,true} forces to check connection status not from cache, but from FB originally.
  
  
- #Ternal->
+ #Ternary operator->
  echo  ($_SESSION['connected']) ? $_SESSION['connected'] : " not started"; == if($_SESSION['connected']){echo $_SESSION['connected'];} else {echo "not started";}
  
