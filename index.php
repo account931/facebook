@@ -23,8 +23,9 @@ session_start();
 
       <link rel="stylesheet" type="text/css" media="all" href="css/myFacebook.css">
 	  
-      <script src="js/myFacebook.js"></script>       <!-- Core myFacebook JS-->
-	  <script src="js/changeStyleTheme.js"></script> <!-- Change wallpapers,changeStyleTheme JS-->
+      <script src="js/myFacebook.js"></script>         <!-- Core myFacebook API JS-->
+	  <script src="js/myFacebook_Actions.js"></script> <!-- My different action JS (clicking, scroll etc)-->
+	  <script src="js/changeStyleTheme.js"></script>   <!-- Change wallpapers,changeStyleTheme JS-->
 	  
 	  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- Fa-fa library-->
 	  
@@ -93,7 +94,7 @@ session_start();
                                   <input type="text" class="form-control" id="fbCity" name="qr">
                              </div>
 					
-                            <button type="button" class="btn btn-default" id="submitEvents">Events</button>
+                            <button type="button" class="btn btn-default" id="submitEvents">Places</button>
 							<button type="button" class="btn btn-default" id="submitPeople">People</button>
 				            <button type="button" class="btn btn-default" id="clear">Clear</button>
                         </form>				   
@@ -130,13 +131,23 @@ session_start();
 			     
 				
 				
+				  <!---------  FB SESSION INFO -------->
+				  <br><br><br>
+				  <div class="col-sm-12 col-xs-12 head-style" id="sessionX">
+				     <p> $_SESSION STARTED. USER = <?php echo ($_SESSION['userX'])? $_SESSION['userX'] : " no user logged"  ; ?> </p><!-- see "ternary" in Readme-->
+					 <p> $_SESSION STARTED = <?php echo  ($_SESSION['connected']) ? $_SESSION['connected'] : " not started"; ?>  </p>
+					 <p> END </p>
+				  </div>
 				
 				
 
-				
+				<!------    JUST TO FIX OVERLAPPING by footer ------->
+				<div class="col-sm-12 col-xs-12 head-style" style="height:400px;">
+				</div>
 				
 				
 	 
+
 	 
 	 
     		</div><!-- /.container -->	  		

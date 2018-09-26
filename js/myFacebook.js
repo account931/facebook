@@ -4,29 +4,61 @@ $(document).ready(function(){
 	
 	// Click button to get FB events list---------------
 	$("#submitEvents").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
-        getFBEvents(); 
+	    if(checkIfLoggedtoFB()){
+            getFBEvents(); 
+		}
     });
 	
 	
 	
 	// Click button to get People list-----------------
+	//not working due to FB privacy, it returns only logged user info
 	$("#submitPeople").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
-        getFBPeople(); 
+        if(checkIfLoggedtoFB()){
+		    getFBPeople(); 
+		}
     });
 	
 	
 	// exit not working
 	$("#clear").click(function() {   // $(document).on("click", '.circle', function() {   // this  click  is  used  to   react  to  newly generated cicles;
-        alert("oo"); 
-		 FB.getLoginStatus(function(response) {
-    console.log(response);
-    if (response && response.status === 'connected') {
-      FB.logout(function(response) {
-        window.location.reload();
-      });
-    }
-  });
+	    $("#fbCity").val('');  //sets to empty
+        /*
+		alert("oo"); 
+		FB.getLoginStatus(function(response) {
+            console.log(response);
+            if (response && response.status === 'connected') {
+                FB.logout(function(response) {
+                   window.location.reload();
+                });
+            }
+        });
+        */
     });
+	
+	
+	 //check if u are logged to FB by access token, if no - return FALSE
+	// **************************************************************************************
+    // **************************************************************************************
+    //                                                                                     **
+	function checkIfLoggedtoFB()
+	{
+		var accessTokenZ;
+		try{
+			accessTokenZ = FB.getAuthResponse()['accessToken'];
+			//throw "Crash";
+		} catch(e){
+			alert(e);
+		}
+		
+		if(typeof accessTokenZ === 'undefined'){
+			alert('log in first');
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	
 	
 	
@@ -126,7 +158,7 @@ $(document).ready(function(){
 		if (typeof data.data[i].location.street !== 'undefined') {
 			street = data.data[i].location.street
 		} else {
-			street = "Sorry no street available";
+			street = "Sorry, no street available";
 		}
 		//checks if street is set, if not just return default value
 		
@@ -156,7 +188,7 @@ $(document).ready(function(){
 	
 	
 	
-	
+	//not working due to FB privacy, it returns only logged user info
 	//Getting FB People list
 	// **************************************************************************************
     // **************************************************************************************
@@ -164,7 +196,7 @@ $(document).ready(function(){
 	 function getFBPeople()
 	 {
 		
-		 
+		 /*
 		 var cityX;
 		 
 		 //gets user city input value, if empty, set it to Kyiv
@@ -173,7 +205,7 @@ $(document).ready(function(){
 		 } else {
 		     cityX = $("#fbCity").val();
 		 }
-		 
+		 */
 		 
 		 //IT LOOKS LIKE U CAN GET USER PAGE DETAILS(feeds, pictures, etc), IF ONLY THIS USER LOGS TO YOUR APP USING FB OAUTH, then u can address him with "/me", u can not simply get user info by his ID, like in VK
 		 var accessToken = FB.getAuthResponse()['accessToken']; //getting acces token 
@@ -255,7 +287,7 @@ $(document).ready(function(){
       // This is called with the results from from FB.getLoginStatus().
       function myStatusChangeCallback(response) {
 		  
-	   if (!response.status){ alert("OUTTTTTTT!!! !response.status");} //DELETE???
+	   //if (!response.status){ alert("OUTTTTTTT!!! !response.status");} //DELETE???
 		  
 		  
         console.log(response);
@@ -264,24 +296,29 @@ $(document).ready(function(){
         // Full docs on the response object can be found in the documentation
         // for FB.getLoginStatus().
 		
+		//for logged users
         if (response.status === 'connected') {
           // Logged into your app and Facebook.
-          testAPI(startingPhpSession);  //function {startingPhpSession} used as callback
+          testAPI(startingPhpSession_ajax);  //function {startingPhpSession_ajax} is used as a callback( sends ajax to start Php $_SESSION)
 		  alert("IN");
 		  
 		  
         } else if (response.status === 'not_authorized') {
           // The person is logged into Facebook, but not your app.
           console.log("The person is logged into Facebook, but not your app.");
-		  alert("???OUT");
+		  alert("USER refused access for your application");
 		  
+		//FOR logged out users  
         } else {
           // The person is not logged into Facebook, so we're not sure if
           // they are logged into this app or not.
-		  alert("OUT");
+		  alert("LOGGED OUT");
 		  
 		  //Clears divs with user details on log out
 		  clearUserInfoDiv();
+		  
+		  //sends ajax to Classes/StopPersonalSession.php to destroy Php $_SESSION
+		  stopPhpSession_ajax();
         }
       }
 
@@ -321,8 +358,9 @@ $(document).ready(function(){
         // These three cases are handled in the callback function.
 
 		
-		//Core FB API method to check if the user is logged
-        FB.getLoginStatus(function(response) {
+		//Core FB API method to check if the user is logged CAN NOT BE TURNED OFF
+        FB.getLoginStatus(function(response) { 
+		   alert("FB.getLoginStatus");
           //myStatusChangeCallback(response);
         }, true);  //MEGA FIX-> added {,true}, it forces to check connection status not from cache, but from FB originally
 		
@@ -331,8 +369,8 @@ $(document).ready(function(){
         //FB.Event.subscribe('auth.statusChange', auth_status_change_callback);
 		
 		
-        //subscribing to any changes in auth status(log in/log out)
-		FB.Event.subscribe('auth.authResponseChange', function(response) {
+        //subscribing to any changes in auth status(log in/log out) ->TO AVOID DOUBLE REROUND ON LOGIN -> subscribe for log
+		FB.Event.subscribe('auth.authResponseChange', function(response) {    //auth.logout
             console.log('The status of the session changed to: '+response.status);
             alert('The status of the session changed to: '+response.status);
 			myStatusChangeCallback(response);
@@ -357,13 +395,13 @@ $(document).ready(function(){
 
 	  
 	  
-	  //It runs onSuccess Login, additionally it runs {function startingPhpSession(nameFB)} to start PHP session with received response.name 
+	  //It runs onSuccess Login, additionally it runs {function startingPhpSession_ajax(nameFB)} to start PHP session with received response.name 
       // Here we run a very simple test of the Graph API after login is
       // successful.  See myStatusChangeCallback() for when this call is made.
 	  // **************************************************************************************
       // **************************************************************************************
       //                                                                                     **
-      function testAPI(callbackX) { //callbackX is {function startingPhpSession(nameFB)}
+      function testAPI(callbackX) { //callbackX is {function startingPhpSession_ajax(nameFB)}
 		var nameX;
         console.log('Welcome!  Fetching your information.... ');
 		
@@ -386,8 +424,8 @@ $(document).ready(function(){
 			     '<br><br>Access Token is ' + FB.getAuthResponse()['accessToken'] +   //access token
 				 '<br><br>';
 		
-		//starting function {startingPhpSession(nameX)}
-		callbackX(nameX, idX); //here callbackX() is function {startingPhpSession(nameX)} //Must be inserted inside {FB.api('/me', function(response)}, to be executed the last, because FB.api('/me', function(response)} is a callback itself. Otherwise {function startingPhpSession(nameX)} will start before the response.name is gotten
+		  //starting function {startingPhpSession_ajax(nameX)} - sends ajax to Classes/StartPersonalSession.php to start $_SESSION
+		  callbackX(nameX, idX); //here callbackX() is function {startingPhpSession_ajax(nameX)} //Must be inserted inside {FB.api('/me', function(response)}, to be executed the last, because FB.api('/me', function(response)} is a callback itself. Otherwise {function startingPhpSession_ajax(nameX)} will start before the response.name is gotten
         });  //END  FB.api('/me', function(response) 
 		
 		
@@ -400,7 +438,7 @@ $(document).ready(function(){
 		
 		 //callbackX();	  
 		 //sends user profile detail via <form> POST to same page to start Php Session
-		 //startingPhpSession(nameX);  
+		 //startingPhpSession_ajax(nameX);  
 		  
 		  
       }
@@ -424,20 +462,47 @@ $(document).ready(function(){
     // **************************************************************************************
     // **************************************************************************************
     //                                                                                     **
-	function startingPhpSession(nameFB, idFB)
+	function startingPhpSession_ajax(nameFB, idFB)
 	{
 		alert("response.name " + nameFB + " id " + idFB); //gets users name and id 
 		
 		
 		//creates a form with action to {'Classes/StartPersonalSession.php'} and pass user id/name with $_POST + attificially submit it
+		/*
 		var url = 'Classes/StartPersonalSession.php'; 
         var form = $('<form id="generForm" action="' + url + '" method="post">' +
             '<input type="text" name="api_FB_id" value="' + idFB + '" />' +      //passed ID 
 			'<input type="text" name="api_FB_name" value="' + nameFB + '" />' +  //passes name 
             '</form>');
         $('body').append(form);
-        //form.submit();
+        form.submit();
+		*/
 		
+		
+		 // send  data  to  PHP handler  ************ 
+        $.ajax({
+            url: 'Classes/StartPersonalSession.php',
+            type: 'POST',
+			dataType: 'JSON', //'JSON' causes crash //without this it returned string(that can be alerted), now it returns object
+			//passing the city
+            data: { 
+			    api_FB_id: idFB,     //passed ID 
+				api_FB_name: nameFB //passes name 
+			},
+            success: function(data) {
+                // do something;
+                //$("#weatherResult").stop().fadeOut("slow",function(){ $(this).html(data) }).fadeIn(2000);
+			    //alert(JSON.stringify(data, null, 4));
+				alert("ajax SESSION started for -> " + data.userX);
+				
+				
+            },  //end success
+			error: function (error) {
+				alert("START SESSION Ajax crashed");
+            }	
+        });
+                                               
+       //  END AJAXed  part 
 		
 	 } 
 	// **                                                                                  **
@@ -449,6 +514,49 @@ $(document).ready(function(){
 	
 	
 	
+	
+	
+	
+	
+	
+
+	//This functions send ajax to stop PHP SESSION
+    // **************************************************************************************
+    // **************************************************************************************
+    //                                                                                     **
+	function stopPhpSession_ajax()
+	{	
+		// send  data  to  PHP handler  ************ 
+        $.ajax({
+            url: 'Classes/StopPersonalSession.php',
+            type: 'POST',
+			dataType: 'JSON', //'JSON' causes crash //without this it returned string(that can be alerted), now it returns object
+			//passing the city
+            data: { 
+			   
+			},
+            success: function(data) {
+                // do something;
+				alert("Stopping session... -> " + data.status);
+				$("#sessionX").html("SESSION IS GONE");
+				
+				
+            },  //end success
+			error: function (error) {
+				alert("STOP SESSION Ajax crashed");
+            }	
+        });
+                                               
+       //  END AJAXed  part 
+		
+	 } 
+	// **                                                                                  **
+    // **************************************************************************************
+    // **************************************************************************************
+
+	
+	
+	
 
 
 	//Clears divs with user details on log out
@@ -457,7 +565,7 @@ $(document).ready(function(){
     //                                                                                     **
 	function clearUserInfoDiv()
 	{
-		$("#status, #generForm").html("");
+		$("#status, #generForm, #resultX").html("");
 		
 	 } 
 	// **                                                                                  **
@@ -493,7 +601,7 @@ $(document).ready(function(){
 	
 	
 	// Scroll the page to results  #resultFinal
-	 // **************************************************************************************
+	// **************************************************************************************
     // **************************************************************************************
     //                                                                                     ** 
 	function scrollResults(divName) 
@@ -517,7 +625,7 @@ $(document).ready(function(){
 	
 	
 	
-	 // **************************************************************************************
+	// **************************************************************************************
     // **************************************************************************************
     //                                                                                     ** 
 	
@@ -529,6 +637,10 @@ $(document).ready(function(){
 	// **                                                                                  **
     // **************************************************************************************
     // **************************************************************************************
+	
+	
+	
+	
 
 });
 // end ready	

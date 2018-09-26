@@ -3,40 +3,31 @@ session_start();
 //error_reporting(-1);
 header('Content-Type: text/html; charset=utf-8'); //sets for russian letters
 		
-class StartPersonalSession {
+class StopPersonalSession {
 
 
 
-    //Starts personal php session based on facebook successfull login
+    //STOP personal php session based on facebook successfull login
     // **************************************************************************************
     // **************************************************************************************
     // **                                                                                  **
     // **                                                                                  **
 
-    public function StartSession(){
+    public function StopSession(){
 		
 		
-	    //echo "id-> " . $_POST['api_FB_id'];   //user id
-		//echo "<br>name-> " . $_POST['api_FB_name']; //user name
-    
-	    if( isset($_POST['api_FB_id']) & $_POST['api_FB_id']!=''){
-			//echo "<br> Logged OK";
-			
-			//starting session
-			$_SESSION['connected'] = true;
-			$_SESSION['userX'] = $_POST['api_FB_id'];
-			
-			//here your further code implementation
-			//like, checking in personal DB if $_SESSION['userX'] id exists, if not INSERT. If exists, UPDATE last visit
-			
-			
-		} else {
-			//echo "<br> Logged Failed";
+
+			//STOP session
 			$_SESSION['connected'] = false;
-		}
-		
+	        session_destroy();
+			unset($_SESSION['connected']);
+			unset($_SESSION['userX']);
+			$status = "Session is stopped";
+			
+			
+	
 		//JSOn output all SESSION vars
-		echo json_encode($_SESSION);
+		echo json_encode($status);
 		
 		//heading back to main FB page
 		//header("Location: ../");  // if eader("Location: ../") crashes make sure there are no echoes above
@@ -60,8 +51,8 @@ class StartPersonalSession {
 
 
 //runs the Class method to start php Session
-$start = new StartPersonalSession();
-$start->StartSession();
+$stop = new StopPersonalSession();
+$stop->StopSession();
 
 
 
