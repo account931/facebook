@@ -1,0 +1,2 @@
+Folder with false/test credentials. Used not to expose them to git, but give an example of structure.
+In your dev/prod mode, rename folder just to "Credentials" and put correct credentials values in files "facebook_access_token.js" 
